@@ -1,4 +1,4 @@
-name: Build iOS IPA
+name: Build iOS IPA (unsigned)
 
 on:
   push:
@@ -18,21 +18,23 @@ jobs:
       - name: generate project
         run: xcodegen generate
 
-      - name: archive app
+      - name: archive app (unsigned)
         run: |
           xcodebuild \
           -scheme NFCUIDReader \
           -sdk iphoneos \
           -configuration Release \
           -archivePath $PWD/build/NFCUIDReader.xcarchive \
-          archive
+          archive \
+          CODE_SIGNING_ALLOWED=NO
 
-      - name: export ipa
+      - name: export ipa (unsigned)
         run: |
           xcodebuild -exportArchive \
           -archivePath $PWD/build/NFCUIDReader.xcarchive \
           -exportOptionsPlist buildOptions.plist \
-          -exportPath $PWD/build
+          -exportPath $PWD/build \
+          CODE_SIGNING_ALLOWED=NO
 
       - name: upload ipa
         uses: actions/upload-artifact@v4
