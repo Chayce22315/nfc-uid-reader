@@ -32,13 +32,21 @@ jobs:
           archive \
           CODE_SIGNING_ALLOWED=NO
 
-      # 5️⃣ package IPA manually
+      # 5️⃣ package IPA manually (clean for zsign / Scarlet)
       - name: Package IPA manually
         run: |
           cd build
-          mkdir -p Payload
+          rm -rf Payload
+          mkdir Payload
           cp -r NFCUIDReader.xcarchive/Products/Applications/NFCUIDReader.app Payload/
-          zip -r NFCUIDReader.ipa Payload
+
+          # remove mac junk files
+          find Payload -name ".DS_Store" -delete
+
+          # zip contents of Payload (important: * not Payload folder itself)
+          cd Payload
+          zip -r ../NFCUIDReader.ipa *
+          cd ..
 
       # 6️⃣ upload IPA as artifact
       - name: Upload IPA
