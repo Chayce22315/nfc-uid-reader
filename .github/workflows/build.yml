@@ -6,22 +6,28 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-26
 
     steps:
       # 1️⃣ checkout repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2️⃣ install xcodegen
+      # 2️⃣ setup Xcode 26.3 explicitly
+      - name: Setup Xcode 26.3
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.3"
+
+      # 3️⃣ install XcodeGen
       - name: Install XcodeGen
         run: brew install xcodegen
 
-      # 3️⃣ generate Xcode project
+      # 4️⃣ generate project
       - name: Generate project
         run: xcodegen generate
 
-      # 4️⃣ archive app (unsigned)
+      # 5️⃣ archive app (unsigned)
       - name: Archive app
         run: |
           xcodebuild \
@@ -32,23 +38,19 @@ jobs:
           archive \
           CODE_SIGNING_ALLOWED=NO
 
-      # 5️⃣ package IPA manually (clean for zsign / Scarlet)
+      # 6️⃣ manually package IPA (clean, sideloadable)
       - name: Package IPA manually
         run: |
           cd build
           rm -rf Payload
           mkdir Payload
           cp -r NFCUIDReader.xcarchive/Products/Applications/NFCUIDReader.app Payload/
-
-          # remove mac junk files
           find Payload -name ".DS_Store" -delete
-
-          # zip contents of Payload (important: * not Payload folder itself)
           cd Payload
           zip -r ../NFCUIDReader.ipa *
           cd ..
 
-      # 6️⃣ upload IPA as artifact
+      # 7️⃣ upload IPA as artifact
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
