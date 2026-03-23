@@ -1,4 +1,4 @@
-name: Build iOS IPA (unsigned)
+name: Build iOS IPA (unsigned, sideloadable)
 
 on:
   push:
@@ -9,16 +9,20 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - name: checkout
+      # 1️⃣ checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: install xcodegen
+      # 2️⃣ install xcodegen
+      - name: Install XcodeGen
         run: brew install xcodegen
 
-      - name: generate project
+      # 3️⃣ generate Xcode project
+      - name: Generate project
         run: xcodegen generate
 
-      - name: archive app (unsigned)
+      # 4️⃣ archive app (unsigned)
+      - name: Archive app
         run: |
           xcodebuild \
           -scheme NFCUIDReader \
@@ -28,16 +32,17 @@ jobs:
           archive \
           CODE_SIGNING_ALLOWED=NO
 
-      - name: export ipa (unsigned)
+      # 5️⃣ package IPA manually
+      - name: Package IPA manually
         run: |
-          xcodebuild -exportArchive \
-          -archivePath $PWD/build/NFCUIDReader.xcarchive \
-          -exportOptionsPlist buildOptions.plist \
-          -exportPath $PWD/build \
-          CODE_SIGNING_ALLOWED=NO
+          cd build
+          mkdir -p Payload
+          cp -r NFCUIDReader.xcarchive/Products/Applications/NFCUIDReader.app Payload/
+          zip -r NFCUIDReader.ipa Payload
 
-      - name: upload ipa
+      # 6️⃣ upload IPA as artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: NFCUIDReader-IPA
-          path: build/*.ipa
+          path: build/NFCUIDReader.ipa
