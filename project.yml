@@ -1,0 +1,23 @@
+name: NFCUIDReader
+
+options:
+  bundleIdPrefix: com.pixelatedstudios
+
+targets:
+  NFCUIDReader:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+
+    sources:
+      - app
+
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.pixelatedstudios.nfcuid
+      INFOPLIST_FILE: Info.plist
+
+    entitlements:
+      path: NFCUIDReader.entitlements
+
+    capabilities:
+      - nfc

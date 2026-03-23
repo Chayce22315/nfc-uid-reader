@@ -1,0 +1,41 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install xcodegen
+        run: brew install xcodegen
+
+      - name: generate project
+        run: xcodegen generate
+
+      - name: archive app
+        run: |
+          xcodebuild \
+          -scheme NFCUIDReader \
+          -sdk iphoneos \
+          -configuration Release \
+          -archivePath $PWD/build/NFCUIDReader.xcarchive \
+          archive
+
+      - name: export ipa
+        run: |
+          xcodebuild -exportArchive \
+          -archivePath $PWD/build/NFCUIDReader.xcarchive \
+          -exportOptionsPlist buildOptions.plist \
+          -exportPath $PWD/build
+
+      - name: upload ipa
+        uses: actions/upload-artifact@v4
+        with:
+          name: NFCUIDReader-IPA
+          path: build/*.ipa
